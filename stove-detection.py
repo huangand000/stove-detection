@@ -22,10 +22,12 @@ class SquelchAlgorithmClass:
         self.max_temp = 0
         # Current temperature
         self.curr_temp = None
+        self.delta = 3
+
 
     # Need more checks: if no AC, house could be above threshold temp
     def update_moving_average(self, new_temp):
-        self._initial_data_gathering(new_temp)
+        # self._initial_data_gathering(new_temp)
         curr_state = self.state
         if new_temp > self.threshold and new_temp > 3 + self.moving_average: # if hot and large increase in temp
             self.state = 'ON'
@@ -44,7 +46,7 @@ class SquelchAlgorithmClass:
                 self.moving_average = (self.moving_average * len(self.data_points) + new_temp - self.data_points[0]) / self.interval_len
                 self.data_points.pop(0)
             else:
-                self.moving_average = (self.moving_average * len(self.data_points) + new_temp) / len(self.data_points)
+                self.moving_average = (self.moving_average * len(self.data_points) + new_temp) / (len(self.data_points) + 1)
             self.data_points.append(new_temp)
         self._check_and_stove_duration(curr_state, new_temp)
         
@@ -55,14 +57,9 @@ class SquelchAlgorithmClass:
             print "State:", self.state
             print "Threshold:", self.threshold 
             print "Current States", self.curr_states 
-            print "State History", self.state_history["stove_duration"]
+            print "State History", self.state_history
             print "Max Temperature:", self.max_temp 
             print "Last record Temperature:", self.curr_temp
-            
-    def _initial_data_gathering(self, new_temp):
-        if len(self.data_points) < self.interval_len:
-            self.data_points.append(new_temp)
-            return
 
     def _check_and_stove_duration(self, curr_state, new_temp):
         if (curr_state == "ON" and self.state == "OFF") or (curr_state == "SIMMERING" and self.state == "OFF"):
@@ -88,5 +85,6 @@ if __name__ == "__main__":
         sq.update_moving_average(25)
 
     sq.update_moving_average(46)
+    sq.update_moving_average(35)
     sq.update_moving_average(25)
     sq.toString()

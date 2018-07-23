@@ -57,3 +57,25 @@ class SquelchAlgorithm:
     # def _initial_data_gathering(self, curr_temp):
         # if len(self.data_points) < self.interval_len:
             # self.data_points.append(curr_temp)
+
+    # Need to update testing methods 
+    def toString(self):
+        print "Data Points:", self.data_points
+        print "Moving Average:", self.moving_average
+        print "Interval Length:", self.interval_len
+        print "State:", self.state
+        print "Threshold:", self.threshold
+        print "Current States", self.curr_states
+        print "State History", self.state_history["stove_duration"]
+        print "Max Temperature:", self.max_temp
+        print "Last record Temperature:", self.curr_temp
+
+
+    if __name__ == "__main__":
+        sq = SquelchAlgorithm(5)
+        for i in range(0, 5):
+            sq.update_moving_average(25)
+
+        sq.update_moving_average(46)
+        sq.update_moving_average(25)
+        sq.toString()

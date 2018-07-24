@@ -1,5 +1,7 @@
 import datetime
 import time
+from MovingAverage import MovingAverage
+
 class SquelchAlgorithmClass:
     
     # assuming one data point (a temperature) taken every minute during interval length
@@ -88,3 +90,5 @@ if __name__ == "__main__":
     sq.update_moving_average(35)
     sq.update_moving_average(25)
     sq.toString()
+
+    mv = MovingAverage(2,3)

@@ -1,10 +1,10 @@
 import MovingAverage
 import datetime
 
-class SquelchAlgorithm:
+class SquelchAlgorithmClass:
 
     # assuming one data point (a temperature) taken every minute during interval length
-    def __init__(self, interval_len, delta):
+    def __init__(self, interval_len=1, delta=3):
         self.data = []
         # self.moving_average = 0
         self.recent_temps = MovingAverage(15)
@@ -74,3 +74,5 @@ class SquelchAlgorithm:
         # Stove has been on for a while - return time - time_moving_average
         # Stove is too hot - return maxtemp - maxaveragetemp > 30
         #
+    if __name__ == "__main__":
+        sq = SquelchAlgorithm()

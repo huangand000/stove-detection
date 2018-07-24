@@ -14,3 +14,6 @@ class MovingAverage:
             new_average = (self.average * len(self.data) + new_value) / float((len(self.data) + 1))
         self.data.append(new_value)
         return new_average
+
+    if __name__ == "__main__":
+        print "hi"

@@ -1,7 +1,6 @@
-import MovingAverage
+from MovingAverage import MovingAverage
 import datetime
-
-class SquelchAlgorithm:
+class SquelchAlgorithmClass:
 
     # TODO: How often to update/how long to keep track of moving averages of stove duration and max temp
 
@@ -71,12 +70,11 @@ class SquelchAlgorithm:
         print "Last record Temperature:", self.curr_temp
 
 
-    if __name__ == "__main__":
-        print __name__
-        sq = SquelchAlgorithm(5)
-        for i in range(0, 5):
-            sq.update_moving_average(25)
-
-        sq.update_moving_average(46)
+if __name__ == "__main__":
+    sq = SquelchAlgorithmClass(5)
+    for i in range(0, 5):
         sq.update_moving_average(25)
-        sq.toString()
+
+    sq.update_moving_average(46)
+    sq.update_moving_average(25)
+    sq.toString()

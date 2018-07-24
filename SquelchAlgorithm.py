@@ -72,6 +72,7 @@ class SquelchAlgorithm:
 
 
     if __name__ == "__main__":
+        print __name__
         sq = SquelchAlgorithm(5)
         for i in range(0, 5):
             sq.update_moving_average(25)

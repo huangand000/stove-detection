@@ -91,3 +91,13 @@ if __name__ == "__main__":
 
     sq.toString()
 
+""" 
+TO-DO LIST
+
+Liam: 
+* Create a moving average for duration
+* Update the state history list with durations retrieved from _check_and_store_duration()
+
+Ryan: 
+* Create a moving average for max temp
+* Update a max temp history list and method that can _check_and_store_maxTemp()

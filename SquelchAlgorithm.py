@@ -1,25 +1,27 @@
-import MovingAverage
+from MovingAverage import MovingAverage
 import datetime
+
 
 class SquelchAlgorithm:
 
-    # TODO: How often to update/how long to keep track of moving averages of stove duration and max temp
-
+    # Constructs a new SquelchAlgorithm object. Parameters interval_len for the length
+    # of the interval from which the recent_temps moving average is calculated,
+    # and delta for the minimum difference for a change in temp to be considered notable.
     def __init__(self, interval_len, delta):
         self.recent_temps = MovingAverage(interval_len) # A moving average of the stove temperature (while off)
         self.state = "OFF" # State of the stove (OFF, ON, or SIMMERING)
         self.delta = delta # Minimum difference for a sudden large change in temp
         self.times_on = [] # A list containing the periods of time that the stove has been on recently
         self.stove_duration = MovingAverage(30) # Moving average of the time the stove is on
-        self.max_temp_today = 0 # The max temperature of the stove today
+        self.max_temp_today = 0 # The max temperature of the stove today (Celsius)
         self.max_temp = MovingAverage(30) # Moving average of the max temp of the stove
         self.prev_temp = None # The previously recorded temp of the stove
 
-    # Updates the state of the stove, and the moving average if the stove is off
+    # Updates the state of the stove, and the moving average if the stove is off. Parameter curr_temp
+    # for the current temp of the stove.
     def update_state(self, curr_temp):
-        # self._initial_data_gathering(curr_temp)
         prev_state = self.state
-        if curr_temp > self.threshold and curr_temp > self.delta + self.moving_average:  # if hot and large increase in temp
+        if curr_temp > self.threshold and curr_temp > self.delta + self.moving_average:
             self.state = 'ON'
             self.curr_states["ON"] = str(datetime.datetime.now()).split('.')[0]
             if curr_temp < self.prev_temp:
@@ -36,13 +38,13 @@ class SquelchAlgorithm:
 
 
     # Should only be updated if the stove has been turned on today (if max_temp_today > some threshold temp)
-    # Updates the moving average of the max temp of the stove and resets max_temp_today to 0
+    # Updates the moving average of the max temp of the stove and resets max_temp_today to 0 degrees Celsius.
     def update_max_temp_moving_average(self):
         self.max_temp.update_average(self.max_temp_today)
         self.max_temp_today = 0
 
-
     # Checks to see if the stove was on and is now off, and updates the moving average of the stove duration.
+    # Parameters curr_state for current state of the stove and curr_temp for current temp of the stove.
     def _check_and_stove_duration(self, curr_state, curr_temp):
         if (curr_state == "ON" and self.state == "OFF") or (curr_state == "SIMMERING" and self.state == "OFF"):
             if ("ON" in self.curr_states or "SIMMERING" in self.curr_states) and "OFF" in self.curr_states:
@@ -51,14 +53,9 @@ class SquelchAlgorithm:
                 self.stove_duration.update_average(on_time - off_time)
         self.prev_temp = curr_temp
 
+    # Need to update testing methods
 
-    # This method may not be necessary because of the moving average class.
-    # Adds the current temp to the data
-    # def _initial_data_gathering(self, curr_temp):
-        # if len(self.data_points) < self.interval_len:
-            # self.data_points.append(curr_temp)
-
-    # Need to update testing methods 
+    """
     def toString(self):
         print "Data Points:", self.data_points
         print "Moving Average:", self.moving_average
@@ -70,12 +67,12 @@ class SquelchAlgorithm:
         print "Max Temperature:", self.max_temp
         print "Last record Temperature:", self.curr_temp
 
-
-    if __name__ == "__main__":
-        sq = SquelchAlgorithm(5)
-        for i in range(0, 5):
-            sq.update_moving_average(25)
-
-        sq.update_moving_average(46)
+if __name__ == "__main__":
+    sq = SquelchAlgorithm(5, 5)
+    for i in range(0, 5):
         sq.update_moving_average(25)
-        sq.toString()
+
+    sq.update_moving_average(46)
+    sq.update_moving_average(25)
+    sq.toString()
+    """

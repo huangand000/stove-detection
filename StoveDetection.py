@@ -91,11 +91,18 @@ class SquelchAlgorithmClass:
             for state in self.state_history:
                 print "Timer now: ", datetime.datetime.now() - self.timer
                 print state
-                if (datetime.datetime.now() - self.timer) > state + self.duration_delta: #+ a delta
+                if (datetime.datetime.now() - self.timer) > state + self.duration_delta: 
                     print "Stove been on for too long"
 
     # updates the max temp moving average if the stove was on since the last update, resets max_temp
     def _check_and_store_maxTemp(self):
+        """
+        Andre's Comments:
+        * If max_temp is being set to 0 every time at the end of the method, how are we getting 
+            the max temp for that day? 
+        * See if you can make the max_temp_list keep track of a max temp of each day 
+            (could have multiple uses of stove per day, only want max temp of that day).
+        """
         if self.max_temp != 0:
             self.max_temp_list.append(self.max_temp)
             if len(self.max_temp_list) == self.max_temp_interval_len:
@@ -107,6 +114,10 @@ class SquelchAlgorithmClass:
                                                 + self.max_temp) / (len(self.max_temp_list) + 1)
             self.data_points.append(self.max_temp)
         self.max_temp = 0
+
+    # Combine algorithm of calcuating moving average for temp, duration, and max_temp
+    def _moving_average(self):
+        pass
 
 if __name__ == "__main__":
     sq = SquelchAlgorithmClass(5)

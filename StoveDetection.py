@@ -22,28 +22,28 @@ class SquelchAlgorithmClass:
         self.max_temp = 0
         # Current temperature
         self.curr_temp = None
-        self.delta = 3
+        self.temp_delta = 3
+        self.duration_delta = datetime.timedelta(seconds = 30)
         # Timer for stove when turned on
         self.timer = datetime.datetime.now()
 
 
     def update_moving_average(self, new_temp):
-        self._check_timer()
         if len(self.data_points) == 0:
             self.moving_average = new_temp
         curr_state = self.state
-        if new_temp > 3 + self.moving_average: # if hot and large increase in temp
+        if new_temp > self.temp_delta + self.moving_average: # if hot and large increase in temp
             self.state = 'ON'
             self._start_timer()
-            self.curr_states["ON"] = str(datetime.datetime.now()).split('.')[0]
+            self.curr_states["ON"] = str(datetime.datetime.now())
             if new_temp < self.curr_temp:
                 self.state = 'SIMMERING'
-                self.curr_states["SIMMERING"] = str(datetime.datetime.now()).split('.')[0]
+                self.curr_states["SIMMERING"] = str(datetime.datetime.now())
             if new_temp > self.max_temp:
                 self.max_temp = new_temp
         else:
             self.state = 'OFF'
-            self.curr_states["OFF"] = str(datetime.datetime.now()).split('.')[0]
+            self.curr_states["OFF"] = str(datetime.datetime.now())
 
         if self.state == 'OFF': # Moving average only updates if the stove is off
             if len(self.data_points) == self.interval_len:
@@ -53,6 +53,8 @@ class SquelchAlgorithmClass:
                 self.moving_average = (self.moving_average * len(self.data_points) + new_temp) / (len(self.data_points) + 1)
             self.data_points.append(new_temp)
         self._check_and_store_duration(curr_state, new_temp)
+        self._check_timer()
+
         
     def toString(self):
             print "Data Points:", self.data_points 
@@ -68,26 +70,34 @@ class SquelchAlgorithmClass:
     def _check_and_store_duration(self, curr_state, new_temp):
         if (curr_state == "ON" and self.state == "OFF") or (curr_state == "SIMMERING" and self.state == "OFF"):
             if ("ON" in self.curr_states or "SIMMERING" in self.curr_states) and "OFF" in self.curr_states:
-                on_time = datetime.datetime.strptime(self.curr_states["ON"], "%Y-%m-%d %H:%M:%S")
-                off_time = datetime.datetime.strptime(self.curr_states["OFF"], "%Y-%m-%d %H:%M:%S")
-                if "stove_duration" not in self.state_history:
-                    self.state_history["stove_duration"] = []
-                self.state_history["stove_duration"].append(on_time - off_time)
+                on_time = datetime.datetime.strptime(self.curr_states["ON"], "%Y-%m-%d %H:%M:%S.%f")
+                off_time = datetime.datetime.strptime(self.curr_states["OFF"], "%Y-%m-%d %H:%M:%S.%f")
+                self.state_history.append(off_time - on_time)
         self.curr_temp = new_temp
 
     def _start_timer(self):
         self.timer = datetime.datetime.now()
 
     def _check_timer(self):
-        print datetime.datetime.now() - self.timer
+        if len(self.state_history) > 0:
+            # Use state moving average to determine instead of looping through state_history
+            for state in self.state_history:
+                print "Timer now: ", datetime.datetime.now() - self.timer
+                print state
+                if (datetime.datetime.now() - self.timer) > state + self.duration_delta: #+ a delta
+                    print "Stove been on for too long"
 
 if __name__ == "__main__":
     sq = SquelchAlgorithmClass(5)
     for i in range(0,2):
         sq.update_moving_average(25)
-
-    sq.update_moving_average(20)
     sq.update_moving_average(30)
+    sq.update_moving_average(25)
+    sq.update_moving_average(25)
+    sq.update_moving_average(35)
+    time.sleep(32)
+    sq.update_moving_average(25)
+
 
     sq.toString()
 
@@ -101,3 +111,4 @@ Liam:
 Ryan: 
 * Create a moving average for max temp
 * Update a max temp history list and method that can _check_and_store_maxTemp()
+"""

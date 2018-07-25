@@ -27,13 +27,6 @@ class SquelchAlgorithmClass:
         # Timer for stove when turned on
         self.timer = datetime.datetime.now()
 
-        """" new fields for max temp """""
-        self.max_temp_list = []
-        self.max_temp_moving_average = 0
-        self.max_temp_interval_len = 30
-
-        """" new fields for max temp """
-
 
     def update_moving_average(self, new_temp):
         if len(self.data_points) == 0:
@@ -93,20 +86,6 @@ class SquelchAlgorithmClass:
                 print state
                 if (datetime.datetime.now() - self.timer) > state + self.duration_delta: #+ a delta
                     print "Stove been on for too long"
-
-    # updates the max temp moving average if the stove was on since the last update, resets max_temp
-    def _check_and_store_maxTemp(self):
-        if self.max_temp != 0:
-            self.max_temp_list.append(self.max_temp)
-            if len(self.max_temp_list) == self.max_temp_interval_len:
-                self.max_temp_moving_average = (self.max_temp_moving_average * len(self.max_temp_list) +
-                                                self.max_temp - self.max_temp_list[0]) / self.max_temp_interval_len
-                self.max_temp_list.pop(0)
-            else:
-                self.max_temp_moving_average = (self.max_temp_moving_average * len(self.max_temp_list)
-                                                + self.max_temp) / (len(self.max_temp_list) + 1)
-            self.data_points.append(self.max_temp)
-        self.max_temp = 0
 
 if __name__ == "__main__":
     sq = SquelchAlgorithmClass(5)

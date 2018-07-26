@@ -1,7 +1,7 @@
 import datetime
 import time
 
-class SquelchAlgorithmClass:
+class StoveDetection:
     
     # assuming one data point (a temperature) taken every minute during interval length
     def __init__(self, interval_len = 5):
@@ -130,7 +130,6 @@ class SquelchAlgorithmClass:
 
     
 if __name__ == "__main__":
-    sq = SquelchAlgorithmClass(5)
     for i in range(0,2):
         sq.update_moving_average(25)
     sq.update_moving_average(31)

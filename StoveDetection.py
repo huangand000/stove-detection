@@ -1,9 +1,16 @@
 import datetime
 import time
 
-class StoveDetection:
+class SquelchAlgorithm:
     
-    # assuming one data point (a temperature) taken every minute during interval length
+    """
+    A Stove Top Detection Device Microservice Helper Class.
+    Utilizing fields, data sets, and measurements to calculate a moving average
+    for three different types of data:
+        * Ambient Temperature
+        * Stove Duration Usage
+        * Maximum Temperature per day
+    """
     def __init__(self, interval_len = 5):
         
         # List of Ambient Temperature History
@@ -41,7 +48,18 @@ class StoveDetection:
         self.duration_delta = datetime.timedelta(seconds = 10)
 
 
-
+    """
+    Main function to update the information with given measurements.
+    Taking in a temperature measurement, this function will update all 
+    information including:
+    * Stove state
+    * Moving average for temperature
+    * Moving average for duration of stove usage
+    * Updates temperature data set
+    * Updates duration data set
+    * Starts/Checks timer for abnormal stove activity
+    :param new_temp: A temperature measurement in Celsius
+    """
     def update_moving_average(self, new_temp):
         if len(self.ambient_temp_history) == 0:
             self.moving_average = new_temp
@@ -66,7 +84,9 @@ class StoveDetection:
         self._check_timer()
 
 
-        
+    """
+    Prints out valuable field values
+    """
     def toString(self):
             print "Temperature History:", self.ambient_temp_history 
             print "Duration History:", self.duration_history
@@ -77,6 +97,11 @@ class StoveDetection:
             print "State:", self.state
             print "Max Temperature:", self.max_temp 
 
+    """
+    Private function to store stove duration of usage
+    :param prev_state: Previous ON/OFF/SIMMERING state 
+    :param new_temp: A temperature measurement in Celsius
+    """
     def _check_and_store_duration(self, prev_state, new_temp):
         if (prev_state == "ON" and self.state == "OFF") or (prev_state == "SIMMERING" and self.state == "OFF"):
             if ("ON" in self.curr_states or "SIMMERING" in self.curr_states) and "OFF" in self.curr_states:
@@ -87,10 +112,14 @@ class StoveDetection:
                 self.curr_states = {}
         self.prev_temp = new_temp
 
-    # Calculates the moving average for the time the stove has been on
+    """
+    Private function to calculate the moving average for stove duration
+    If duration data set exceeds interval length, replace earliest value with 
+    most recent value
+    """
     def _set_duration_moving_average(self):
         if len(self.duration_history) == self.interval_len + 1:
-            self.duration_history.pop(0) # if duration_history is longer than the interval, remove the first value
+            self.duration_history.pop(0) 
        
         total = datetime.timedelta(seconds = 0)
         for time in self.duration_history:
@@ -98,22 +127,37 @@ class StoveDetection:
         self.duration_moving_average = total / len(self.duration_history)
 
 
-    # updates the max temp moving average if the stove was on since the last update, resets max_temp
+    """
+    Updates the max temperature moving average.
+    If the stove wasn't turned on, max temp set to 0.
+    """
     def check_and_store_maxTemp(self):
         if self.max_temp != 0:
             self.max_temp_moving_average = self._moving_average(self.max_temp_history, self.max_temp_moving_average, self.max_temp)
         self.max_temp = 0
 
+    """
+    Private function to start a timer when the stove is turned on.
+    """
     def _start_timer(self):
         self.timer = datetime.datetime.now()
 
+    """
+    Private function to check if the stove has been on for a abnormal duration.
+    """
     def _check_timer(self):
         print "this is ",self.duration_moving_average
         if len(self.duration_history) != 0:
             if (datetime.datetime.now() - self.timer) > self.duration_moving_average + self.duration_delta: 
                 print "Stove been on for too long"
 
-    # Combine algorithm of calcuating moving average for temp, duration, and max_temp
+    """
+    Private function that calculates the moving average.
+    :param: data_set: A list with any numerical data
+    :param: moving_average: Calculates a moving average given the data set.
+    :param: data: A single numerical measurement to update the data set and moving average
+    :return moving_average: Returns the updated moving average
+    """
     def _moving_average(self, data_set, moving_average, data):
         if len(data_set) == self.interval_len:
             moving_average = (moving_average * len(data_set) + 
@@ -129,20 +173,21 @@ class StoveDetection:
         
 
     
-if __name__ == "__main__":
-    for i in range(0,2):
-        sq.update_moving_average(25)
-    sq.update_moving_average(31)
-    sq.update_moving_average(25)
-    sq.update_moving_average(25)
-    sq.update_moving_average(35)
-    sq.update_moving_average(25)
-    sq.update_moving_average(40)
-    sq.update_moving_average(30)
+# if __name__ == "__main__":
+#     sq = SquelchAlgorithm(5)
+#     for i in range(0,2):
+#         sq.update_moving_average(25)
+#     sq.update_moving_average(31)
+#     sq.update_moving_average(25)
+#     sq.update_moving_average(25)
+#     sq.update_moving_average(35)
+#     sq.update_moving_average(25)
+#     sq.update_moving_average(40)
+#     sq.update_moving_average(30)
 
 
 
 
-    sq.toString()
+#     sq.toString()
 
 

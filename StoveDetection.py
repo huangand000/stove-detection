@@ -24,6 +24,8 @@ class SquelchAlgorithmClass:
         self.curr_temp = None
         self.temp_delta = 3
         self.duration_delta = datetime.timedelta(seconds = 30)
+        # Moving average for the time the stove has been on
+        self.duration_moving_average = 0
         # Timer for stove when turned on
         self.timer = datetime.datetime.now()
 
@@ -80,7 +82,17 @@ class SquelchAlgorithmClass:
                 on_time = datetime.datetime.strptime(self.curr_states["ON"], "%Y-%m-%d %H:%M:%S.%f")
                 off_time = datetime.datetime.strptime(self.curr_states["OFF"], "%Y-%m-%d %H:%M:%S.%f")
                 self.state_history.append(off_time - on_time)
+                self.set_duration_moving_average()
         self.curr_temp = new_temp
+
+    # Calculates the moving average for the time the stove has been on
+    def _set_duration_moving_average(self):
+        if len(self.state_history) == self.interval_len + 1:
+            self.state_history.pop(0) # if state_history is longer than the interval, remove the first value
+        total = 0
+        for time in self.state_history:
+            total += time
+        self.duration_moving_average = float(total) / len(self.state_history)
 
     def _start_timer(self):
         self.timer = datetime.datetime.now()

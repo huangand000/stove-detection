@@ -107,25 +107,11 @@ class SquelchAlgorithm:
             if ("ON" in self.curr_states or "SIMMERING" in self.curr_states) and "OFF" in self.curr_states:
                 on_time = datetime.datetime.strptime(self.curr_states["ON"], "%Y-%m-%d %H:%M:%S.%f")
                 off_time = datetime.datetime.strptime(self.curr_states["OFF"], "%Y-%m-%d %H:%M:%S.%f")
-                self.duration_history.append(off_time - on_time)
-                self._set_duration_moving_average()
+                difference = (off_time - on_time).total_seconds()
+                self.duration_moving_average = self._moving_average(self.duration_history,
+                                                                    self.duration_moving_average, difference)
                 self.curr_states = {}
         self.prev_temp = new_temp
-
-    """
-    Private function to calculate the moving average for stove duration
-    If duration data set exceeds interval length, replace earliest value with 
-    most recent value
-    """
-    def _set_duration_moving_average(self):
-        if len(self.duration_history) == self.interval_len + 1:
-            self.duration_history.pop(0) 
-       
-        total = datetime.timedelta(seconds = 0)
-        for time in self.duration_history:
-            total += time
-        self.duration_moving_average = total / len(self.duration_history)
-
 
     """
     Updates the max temperature moving average.
@@ -133,7 +119,8 @@ class SquelchAlgorithm:
     """
     def check_and_store_maxTemp(self):
         if self.max_temp != 0:
-            self.max_temp_moving_average = self._moving_average(self.max_temp_history, self.max_temp_moving_average, self.max_temp)
+            self.max_temp_moving_average = self._moving_average(self.max_temp_history, self.max_temp_moving_average,
+                                                                self.max_temp)
         self.max_temp = 0
 
     """
@@ -148,7 +135,8 @@ class SquelchAlgorithm:
     def _check_timer(self):
         print "this is ",self.duration_moving_average
         if len(self.duration_history) != 0:
-            if (datetime.datetime.now() - self.timer) > self.duration_moving_average + self.duration_delta: 
+            if (datetime.datetime.now() - self.timer).total_seconds() > self.duration_moving_average + \
+                    self.duration_delta.total_seconds():
                 print "Stove been on for too long"
 
     """
@@ -160,34 +148,30 @@ class SquelchAlgorithm:
     """
     def _moving_average(self, data_set, moving_average, data):
         if len(data_set) == self.interval_len:
-            moving_average = (moving_average * len(data_set) + 
+            moving_average = (moving_average * len(data_set) +
                                    data - data_set[0]) / self.interval_len
             data_set.pop(0)
         else:
-            moving_average = (moving_average * len(data_set) + 
+            moving_average = (moving_average * len(data_set) +
                                    data) / (len(data_set) + 1)
         data_set.append(data)
         return moving_average
 
 
-        
 
-    
-# if __name__ == "__main__":
-#     sq = SquelchAlgorithm(5)
-#     for i in range(0,2):
-#         sq.update_moving_average(25)
-#     sq.update_moving_average(31)
-#     sq.update_moving_average(25)
-#     sq.update_moving_average(25)
-#     sq.update_moving_average(35)
-#     sq.update_moving_average(25)
-#     sq.update_moving_average(40)
-#     sq.update_moving_average(30)
+if __name__ == "__main__":
+    sq = SquelchAlgorithm(5)
+    for i in range(0,2):
+        sq.update_moving_average(25)
+        sq.update_moving_average(31)
+        sq.update_moving_average(25)
+        sq.update_moving_average(25)
+        sq.update_moving_average(35)
+        time.sleep(20)
+        sq.update_moving_average(25)
+        sq.update_moving_average(40)
+        sq.update_moving_average(30)
 
-
-
-
-#     sq.toString()
+        sq.toString()
 
 

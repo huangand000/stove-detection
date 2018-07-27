@@ -79,7 +79,7 @@ class SquelchAlgorithm:
             self.curr_states["OFF"] = str(datetime.datetime.now())
 
         if self.state == 'OFF': # Moving average only updates if the stove is off
-            self.moving_average = self._moving_average(self.ambient_temp_history, self.moving_average, new_temp)
+            self.moving_average = self._moving_average(self.ambient_temp_history, self.moving_average, new_temp, False)
         self._check_and_store_duration(prev_state, new_temp)
         self._check_timer()
 
@@ -107,9 +107,9 @@ class SquelchAlgorithm:
             if ("ON" in self.curr_states or "SIMMERING" in self.curr_states) and "OFF" in self.curr_states:
                 on_time = datetime.datetime.strptime(self.curr_states["ON"], "%Y-%m-%d %H:%M:%S.%f")
                 off_time = datetime.datetime.strptime(self.curr_states["OFF"], "%Y-%m-%d %H:%M:%S.%f")
-                difference = (off_time - on_time).total_seconds()
+                difference = (off_time - on_time)
                 self.duration_moving_average = self._moving_average(self.duration_history,
-                                                                    self.duration_moving_average, difference)
+                                                                    self.duration_moving_average, difference, True)
                 self.curr_states = {}
         self.prev_temp = new_temp
 
@@ -120,7 +120,7 @@ class SquelchAlgorithm:
     def check_and_store_maxTemp(self):
         if self.max_temp != 0:
             self.max_temp_moving_average = self._moving_average(self.max_temp_history, self.max_temp_moving_average,
-                                                                self.max_temp)
+                                                                self.max_temp, False)
         self.max_temp = 0
 
     """
@@ -146,15 +146,19 @@ class SquelchAlgorithm:
     :param: data: A single numerical measurement to update the data set and moving average
     :return moving_average: Returns the updated moving average
     """
-    def _moving_average(self, data_set, moving_average, data):
+    def _moving_average(self, data_set, moving_average, new_value, is_duration):
+        if is_duration:
+            new_value = new_value.total_seconds()
         if len(data_set) == self.interval_len:
             moving_average = (moving_average * len(data_set) +
-                                   data - data_set[0]) / self.interval_len
+                                   new_value - data_set[0]) / self.interval_len
             data_set.pop(0)
         else:
             moving_average = (moving_average * len(data_set) +
-                                   data) / (len(data_set) + 1)
-        data_set.append(data)
+                                   new_value) / (len(data_set) + 1)
+        if is_duration:
+            new_value = datetime.timedelta(seconds=new_value)
+        data_set.append(new_value)
         return moving_average
 
 
@@ -167,7 +171,7 @@ if __name__ == "__main__":
         sq.update_moving_average(25)
         sq.update_moving_average(25)
         sq.update_moving_average(35)
-        time.sleep(20)
+        time.sleep(30)
         sq.update_moving_average(25)
         sq.update_moving_average(40)
         sq.update_moving_average(30)
